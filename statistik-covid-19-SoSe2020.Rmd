@@ -1,5 +1,6 @@
 ---
 output:
+  pdf_document: default
   html_document: default
 ---
 
@@ -25,6 +26,12 @@ Bearbeiten Sie bitte alle Aufgaben direkt in diesem Dokument. Wie dies geht, ler
 
 ## Abgabe
 
+## GRUPPE 16 
+
+Name: Thanh Thuy Vu _____ Matrikelnummer: s0566770
+Name: Huy Nam Nguyen_____ Matrikelnummer: s0566103
+Name: Anh Quang Le  _____ Matrikelnummer: 
+
 Bitte bearbeiten Sie diese Hausarbeit in Dreiergruppen, zu denen Sie sich in Moodle anmelden. Legen das Ergebnis in Moodle ab:
 
 1. Diese RMarkdown-Datei mit Ihren Lösungen
@@ -41,12 +48,10 @@ Lernen Sie die Benutzung von *RMarkdown* und *HTML Notebooks* in RStudio auf htt
 Übersetzen Sie dieses Aufgabenblatt über den Knopf `Knit` von RStudio in ein HTML-Dokument. Unter Umständen müssen Sie Pakete wie *rmarkdown* oder *knitr* installieren --- `Knit` wird Sie aber darauf hinweisen und die Installation anbieten.  
 
 
-
-
-
 ## Aufgabe 2 (10 Punkte)
 
 a) Laden Sie Daten des Robert-Koch-Instituts zur Verbreitung von SARS-CoV-2/Covid-19 in Deutschland von [RKI COVID19](https://npgeo-corona-npgeo-de.hub.arcgis.com/datasets/dd4580c810204019a7b8eb3e0b329dd6_0/data) herunter (`Data > Download > Spreadsheet`) und speichern Sie die Datei auf Ihrem Rechner, am besten im selben Verzeichnis wie dieses Dokument.  
+
 
 b) Öffnen Sie die Datendatei in RStudio über `File > Open File`. Sie sollten eine einfache Textdarstellung der Daten sehen. Untersuchen Sie die Struktur der Daten. Für das Einlesen der Daten in R ist insbesondere interessant, ob die Namen der Spalten in der ersten Zeile angegeben sind und welches Zeichen zum Trennen der Spalten benutzt wird. Schreiben Sie auf, was Sie gefunden haben.
 
@@ -56,7 +61,7 @@ c) Benutzen Sie den Befehl `read.csv()`, um die Daten einzulesen und weisen Sie 
 
 
 ```{r}
- covid_19 <- read.csv("~/Statistik/RKI_COVID19.csv", header = TRUE, stringsAsFactors = FALSE)
+covid_19 <- read.csv("~/Statistik/RKI_COVID19.csv", header = TRUE, stringsAsFactors = FALSE)
 
 View(covid_19)
 
@@ -65,32 +70,49 @@ View(covid_19)
 
 
 
-
 ## Aufgabe 3 (20 Punkte)
 
 a) Untersuchen Sie `covid_19` mit Befehlen wie `summary()` und `str()` und vergegenwärtigen sich die Datentypen wie `int`, `Factor` usw. Gibt es fehlende Werte? Wenn ja, wie wurden diese kodiert? Gibt es falsche oder unerwartete Werte? Finden Sie heraus, was sie bedeuten. 
-
 
 ```{r}
 summary(covid_19)
 str(covid_19)
 ```
 
+Gibt es fehlende Werte? Wie wurden diese kodiert?
+A: Es werden eine begrenzte Anzahl (6) an Bundesländern, Landkreisen, Meldedaten und RefDaten angezeigt. Die restlichen werden als "(other)" zusammengefasst. 
+
+
+Gibt es falsche oder unerwartete Werte? Was bedeuten sie?
+
+A: 1. wurde LandkreisID fälschlicherweise als int codiert, dadurch werden die IDs falsch dargestellt - falls eine 0 am Anfang der ID sein sollte, fällt diese nämlich weg.
+   2. Meldedatum und Referenzdatum wurden als "Faktor" statt "Date" codiert, bei dem Meldedatum kann deshalb die Uhrzeit nicht angezeigt werden.
+
+
+
 
 b) Was sind die Merkmalsträger, was ist die Grundgesamtheit, was die Merkmale und die Ausprägungen? 
--done
+
+
+-Merkmalsträger:Menschen
+-Grundgesamtheit: Menge aller infizierten
+-Merkmale: Bundesland, IdBundesland, Landkreis, Altersgruppe, Geschlecht, AnzahlFall, AnzahlTodesfall, ObjectId, Meldedatum, IdLandkreis, NeuerFall, NeuerTodesfall, Refdatum, Neugenesen, AnzahlGenesen, Datenstand
+-Ausprägungen: sämtliche Bundesländer, Bundesland IDs, Landkreise, Altersgruppen, Geschlechter, anzahl Fälle, anzahl Todesfälle, Object IDs, Meldedaten, Landkreis IDs, Datenstanddaten, Neue Todesfälle, Neue Fälle, Referenzdaten, neu genesen, anzahl der Genesenen
+
 c) Auf welchen Skalenniveaus (nominal, ordinal, kardinal) sind die Merkmale definiert?
--done
+
+
+Kardinal: AnzahlFall, AnzahlTodesfall, Meldedatum, Referenzdatum, AnzahlGenesen
+
+Ordinal: Altersgruppe, NeuGenesen, NeuerTodesfall, NeuerFall
+
+Nominal: Bundesland, Landkreis, Geschlecht, IdBundesland, ObjectId, IdLandkreis
+
 d) Wie Sie in c) sicher bemerkt haben, enthalten zwei Spalten ein Datum. Wandeln Sie deren Datentyp zur sinnvollen Verarbeitung in ein Datum um. Sehen Sie sich dazu die Funktion `as.Date()` an. Prüfen Sie, ob die Umwandlung erfolgreich war. 
-
-
-
-
-
 
 ```{r}
 library(dplyr)
-library(stringr)
+
 covid_19_date <- mutate(covid_19, Meldedatum = as.Date(covid_19$Meldedatum, format = "%Y-%m-%d"), Refdatum = as.Date(covid_19$Refdatum, format = "%Y-%m-%d") )
 covid_19_date
 
@@ -102,42 +124,52 @@ covid_19_date
 
 Für folgende Teilaufgaben müssen Sie sich genau überlegen, was eine Zeile im Datensatz aussagt (Hinweis: in zwei Spalten steht ein Datum). Unter Umständen müssen Sie Daten aggregieren oder passend auswählen. Beschriften Sie alle Visualisierungen (Titel und Achsen).
 
+
+ERKLÄRUNG: 
+
+- Für diese Aufgabe haben wir Meldedatum verwendet, da das Meldedatum ein Datum ist, das die offiziellen Behörden verwenden. Das Referenzdatum ist lediglich ein unbestätigter Verdachtsfall und die Daten sind nicht immer bekannt.
+- Alle Fälle mit Werten < 0 sind für den aktuellen Datensatz fehlerhafte Werte, da dies genesene bzw falsch diagnostizierte Patienten darstellt.
+
+
 a) Erzeugen Sie ein Balkendiagramm für die aktuelle Anzahl der Fälle `AnzahlFall` über den Altersgruppen. Benutzen Sie hierzu `barplot()` oder vergleichbare Funktionen der Bibliotheken `ggplot2` oder `plotly`. Wiederholen Sie dies für die Bundesländer und für Geschlecht.
 
 ```{r}
 library(ggplot2)
-
-a1 <- covid_19_date%>%
-  filter(NeuerFall>= 0, Altersgruppe != "unbekannt")%>%
+# Balkendiagramm für die aktuelle Anzahl der Fälle über den Altersgruppen
+# Daten nach Altersgruppe gruppieren und unbekannte Werte entfernen
+anzahlfall_altersgruppen <- covid_19_date%>%
+  filter(AnzahlFall>= 0, Altersgruppe != "unbekannt")%>%
 group_by(Altersgruppe)%>%
   summarise(summe = sum(AnzahlFall))
 
 
- ggplot(a1, aes(x=Altersgruppe, y= summe))+
-    ggtitle("Die aktuelle Anzahl der Fälle `AnzahlFall` über Altersgruppen")+
+ ggplot(anzahlfall_altersgruppen, aes(x=Altersgruppe, y= summe))+
+    ggtitle("Die aktuelle Anzahl der Fälle der jeweiligen Altersgruppen")+
   geom_col()+
  geom_text(aes(label = summe), vjust = -0.5)
 
+ 
+# Balkendiagramm für die aktuelle Anzahl der Fälle der jeweiligen Bundesländer
+# Daten nach Bundesland gruppieren
+anzahlfall_bundesland <- covid_19%>%
+  filter(AnzahlFall>= 0)%>%
+  group_by(Bundesland)
 
-a2 <- covid_19%>%
-  filter(NeuerFall>= 0)%>%
-  group_by(Bundesland)%>%
-  arrange(desc(AnzahlFall))
+ggplot(anzahlfall_bundesland, aes(y=Bundesland, x= AnzahlFall))+
+  ggtitle("Die aktuelle Anzahl der Fälle der jeweiligen Bundesländer")+
+  geom_col()
 
-ggplot(a2, aes(y=Bundesland, x= AnzahlFall))+
-  ggtitle("Die aktuelle Anzahl der Fälle `AnzahlFall` über Bundesländer")+
-geom_col()
-
-
-a3 <- covid_19%>%
-  filter(NeuerFall>= 0, Geschlecht != "unbekannt")%>%
+# Balkendiagramm für die aktuelle Anzahl der Fälle der jeweiligen Geschlechter
+# Daten nach Geschlecht gruppieren und unbekannte Werte entfernen
+anzahlfall_geschlecht <- covid_19%>%
+  filter(AnzahlFall>= 0, Geschlecht != "unbekannt")%>%
   group_by(Geschlecht)%>%
   summarise(summe = sum(AnzahlFall))
 
-ggplot(a3, aes(x=Geschlecht, y= summe))+
-  ggtitle("Die aktuelle Anzahl der Fälle `AnzahlFall` über Geschlecht")+
-geom_col(width = 0.7)+
- geom_text(aes(label = summe), vjust = -0.5)
+ggplot(anzahlfall_geschlecht, aes(x=Geschlecht, y= summe))+
+  ggtitle("Die aktuelle Anzahl der Fälle der jeweiligen Geschlechter.")+
+  geom_col(width = 0.7)+
+  geom_text(aes(label = summe), vjust = -0.5)
 
 
 ```
@@ -146,34 +178,46 @@ b) Erzeugen Sie ein Balkendiagramm für die aktuelle Anzahl der Todesfälle `Anz
 
 ```{r}
 
-b1 <- covid_19%>%
+anzahltodesfall_altersgruppe <- covid_19%>%
   filter(NeuerTodesfall>= 0, Altersgruppe != "unbekannt")%>%
   group_by(Altersgruppe)%>%
   summarise(summe = sum(AnzahlTodesfall))
 
-b1
- ggplot(b1, aes(x=Altersgruppe, y= summe))+
-   ggtitle("Die aktuelle Anzahl der Todesfälle `AnzahlTodesfall` über Altersgruppen")+
+anzahltodesfall_altersgruppe
+
+ ggplot(anzahltodesfall_altersgruppe, aes(x=Altersgruppe, y= summe))+
+   ggtitle("Die aktuelle Anzahl der Todesfälle der jeweiligen Altersgruppen")+
   geom_col()+
  geom_text(aes(label = summe), vjust = -0.5)
  
 
-b2 <- covid_19%>%
+ 
+ 
+ 
+anzahltodesfall_bundesland <- covid_19%>%
   filter(NeuerTodesfall>= 0)%>%
   group_by(Bundesland)
-b2
- ggplot(b2, aes(x=AnzahlTodesfall, y= Bundesland))+
-   ggtitle("Die aktuelle Anzahl der Todesfälle `AnzahlTodesfall` über Bundesländer")+
+
+anzahltodesfall_bundesland
+
+ ggplot(anzahltodesfall_bundesland, aes(x=AnzahlTodesfall, y= Bundesland))+
+   ggtitle("Die aktuelle Anzahl der Todesfälle der jeweiligen Bundesländer")+
   geom_col()
  
  
-b3 <- covid_19%>%
+ 
+ 
+ 
+ 
+anzahltodesfall_geschlecht <- covid_19%>%
   filter(NeuerTodesfall>= 0, Geschlecht != "unbekannt")%>%
   group_by(Geschlecht)%>%
   summarise(summe = sum(AnzahlTodesfall))
-b3
- ggplot(b3, aes(x=Geschlecht, y= summe))+
-   ggtitle("Die aktuelle Anzahl der Todesfälle `AnzahlTodesfall` über Geschlecht")+
+
+anzahltodesfall_geschlecht
+
+ ggplot(anzahltodesfall_geschlecht, aes(x=Geschlecht, y= summe))+
+   ggtitle("Die aktuelle Anzahl der Todesfälle der jeweiligen Geschlechter")+
   geom_col()+
  geom_text(aes(label = summe), vjust = -0.5)
 
@@ -182,23 +226,26 @@ b3
 c) Erzeugen Sie ein Liniendiagramm von `AnzahlFall` über der Zeit, d.h. die Zeitreihe der Anzahl der Fälle in Gesamtdeutschland. Benutzen Sie hierzu `plot()` oder vergleichbare Funktionen der Bibliotheken `ggplot2` oder `plotly`. 
 
 ```{r}
-
-c_data <- covid_19_date%>%
+# Daten nach Meldedatum gruppieren und ordnen
+anzahlfall_zeitreihe <- covid_19_date%>%
   filter(NeuerFall>= 0)%>%
   group_by(Meldedatum)%>%
   arrange(Meldedatum)%>%
   summarize(sumFall = sum(AnzahlFall))%>%
   mutate(total_col = 0)
 
-
+# eine Spalte für die totale Fälle hinzufügen
  total <- 0
-  for(i in 1:dim(c_data)[1]){
-   total = total + c_data[i,"sumFall"]
-    c_data[i, "total_col"] = total
+  for(i in 1:dim(anzahlfall_zeitreihe)[1]){
+   total = total + anzahlfall_zeitreihe[i,"sumFall"]
+    anzahlfall_zeitreihe[i, "total_col"] = total
   }
-    c_data
-  
- ggplot(c_data, aes(x=Meldedatum, y= total_col))+
+
+
+anzahlfall_zeitreihe
+
+# Liniendiagramm mit 'ggplot2' erstellen
+ ggplot(anzahlfall_zeitreihe, aes(x=Meldedatum, y= total_col))+
     ggtitle("Die Zeitreihe der Anzahl der Fälle in Gesamtdeutschland")+
   geom_line()
 ```
@@ -206,16 +253,9 @@ c_data <- covid_19_date%>%
 d) Erzeugen Sie ein Liniendiagramm der täglich angefallenden Fälle in Gesamtdeutschland über der Zeit. 
 ```{r}
 
-d <- covid_19_date%>%
-  filter(NeuerFall>= 0)%>%
-  group_by(Meldedatum)%>%
-  arrange(Meldedatum)%>%
-  summarize(sumFall = sum(AnzahlFall))
-  d
- ggplot(d, aes(x=Meldedatum, y= sumFall))+
+ ggplot(anzahlfall_zeitreihe, aes(x=Meldedatum, y= sumFall))+
    ggtitle("Täglich angefallenden Fälle in Gesamtdeutschland über der Zeit.")+
-  geom_line()+
-expand_limits(y=0)
+  geom_line()
 ```
 e) Wiederholen Sie c) und d) für `AnzahlTodesfall`. 
 
@@ -223,25 +263,25 @@ Liniendiagramm von `AnzahlTodesfall` über der Zeit
 
 
 ```{r}
-
-e1<- covid_19_date%>%
+# Daten nach Meldedatum gruppieren und ordnen
+anzahlTodesfall_zeitreihe<- covid_19_date%>%
   group_by(Meldedatum)%>%
   arrange(Meldedatum)%>%
   summarize(summe_Todesfall_am_Tag = sum(AnzahlTodesfall))
 
-sum(e1$summe_Todesfall_am_Tag)
-
+# eine Spalte für die totale Todesfälle hinzufügen
  total_Todesfall <- 0
-  for(i in 1:dim(e1)[1]){
-   total_Todesfall = total_Todesfall + e1[i,"summe_Todesfall_am_Tag"]
-    e1[i, "total_Todesfall"] = total_Todesfall
+  for(i in 1:dim(anzahlTodesfall_zeitreihe)[1]){
+   total_Todesfall = total_Todesfall + anzahlTodesfall_zeitreihe[i,"summe_Todesfall_am_Tag"]
+    anzahlTodesfall_zeitreihe[i, "total_Todesfall"] = total_Todesfall
   }
-    e1
-  
- ggplot(e1, aes(x=Meldedatum, y= total_Todesfall))+
-    ggtitle("`AnzahlTodesfall` über der Zeit")+
-  geom_line()+
-expand_limits(y=0)
+
+anzahlTodesfall_zeitreihe
+    
+# Liniendiagramm mit 'ggplot2' erstellen
+ ggplot(anzahlTodesfall_zeitreihe, aes(x=Meldedatum, y= total_Todesfall))+
+    ggtitle(" Anzahl der totalen Todesfälle über der Zeit")+
+  geom_line()
 ```
 
 
@@ -254,10 +294,10 @@ expand_limits(y=0)
 Liniendiagramm der täglich angefallenden Todesfälle in Gesamtdeutschland über der Zeit. 
 
 ```{r}
- ggplot(e1, aes(x=Meldedatum, y= summe_Todesfall_am_Tag))+
+# Liniendiagramm mit 'ggplot2' erstellen
+ ggplot(anzahlTodesfall_zeitreihe, aes(x=Meldedatum, y= summe_Todesfall_am_Tag))+
   ggtitle("Täglich angefallenden Todesfälle in Gesamtdeutschland über der Zeit.")+
-  geom_line()+
-expand_limits(y=0)
+  geom_line()
 ```
 
 
